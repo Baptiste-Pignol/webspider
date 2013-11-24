@@ -15,6 +15,11 @@ var request         = require('request');
 // See: http://expressjs.com/guide.html
 var express         = require('express');
 var app             = express();
+app.set('views', __dirname+"/html2");
+app.engine('html', require('ejs').renderFile);
+app.use('/dist', express.static(__dirname + '/html2/dist'));
+app.use('/js', express.static(__dirname + '/html2/js'));
+
  
 // You should (okay: could) use your OWN implementation here!
 // My own implementation of EventEmitter
@@ -22,6 +27,8 @@ var EventEmitter    = require('./eventEmitter.js').EventEmitter;
  
 // We create a global EventEmitter (Mediator pattern: http://en.wikipedia.org/wiki/Mediator_pattern )
 var em              = new EventEmitter();
+
+var _ = require('lodash');
  
 /**
  * Remainder:
@@ -31,7 +38,20 @@ var em              = new EventEmitter();
  * // It may be a good idea to encapsulate queue inside its own class/module and require it with:
  * var queue = require('./queue');
  */
-var queue        = [];
+var queue        = []; // All links found whith the scraper
+var linkScrapped = []; // All page already scraped
+var contentHtml = [];  // All page html content already scraped
+var linkError = [];    // All page with scrap error
+
+
+// Other variables
+var notJs = false; // don't scrap javascript pages
+var nbAdr = -1;    // number of page to scrap (infity if negative)
+var domain = {};
+var nbTextPages = 0;
+var nbImagePages = 0;
+var nbAudioPages = 0;
+var nbVideoPages = 0;
  
 /**
  * Get the page from `page_url`
@@ -46,6 +66,28 @@ function get_page(page_url){
   request({
     url:page_url,
   }, function(error, http_client_response, html_str){
+
+    if (http_client_response) {
+      if (domain[http_client_response.request.host]) {
+        domain[http_client_response.request.host] += 1;
+      }
+      else {
+        domain[http_client_response.request.host] = 1;
+      }
+    }
+
+    if (http_client_response && (http_client_response.headers['content-type'].indexOf('text') != -1)) {
+      nbTextPages ++;
+    }
+    if (http_client_response && (http_client_response.headers['content-type'].indexOf('image') != -1)) {
+      nbImagePages ++;
+    }
+    if (http_client_response && (http_client_response.headers['content-type'].indexOf('audio') != -1)) {
+      nbAudioPages ++;
+    }
+    if (http_client_response && (http_client_response.headers['content-type'].indexOf('video') != -1)) {
+      nbVideoPages ++;
+    }
     /**
      * The callback argument gets 3 arguments.
      * The first is an error when applicable (usually from the http.Client option not the http.ClientRequest object).
@@ -60,12 +102,11 @@ function get_page(page_url){
      *  -> was compression active ? (Content-Encoding: gzip ?)
      *  -> the Content-Type
      */
- 
-    if(error){
+
+    if(error || (http_client_response && (notJs && (http_client_response.headers['content-type'].indexOf('text/javascript') != -1)))){
       em.emit('page:error', page_url, error);
       return;
     }
- 
     em.emit('page', page_url, html_str);
   });
 }
@@ -87,7 +128,30 @@ function extract_links(page_url, html_str){
     // - ...
     em.emit('url', page_url, html_str, url);
   });
+  em.emit('beforeScraping', page_url, html_str);
  
+}
+
+function scrapNextPage(page_url, html_str) {
+  if ((nbAdr < 0) || (linkScrapped.length < nbAdr)) {
+    var linkFound = false;
+
+    if (html_str) {
+      contentHtml.push(html_str);
+      linkScrapped.push(page_url);
+    }
+    else {
+      linkError.push(page_url);
+    }
+    
+    queue = _.uniq(queue);
+    queue.forEach(function (val) {
+      if ((!linkFound) && (linkScrapped.indexOf(val) === -1) && (linkError.indexOf(val) === -1)) {
+        get_page(val);
+        linkFound = true;
+      }
+    });
+  }
 }
  
 function handle_new_url(from_page_url, from_page_str, url){
@@ -98,6 +162,28 @@ function handle_new_url(from_page_url, from_page_str, url){
   // in order to then provide a Web UI to request the data (or monitoring the scraper maybe ?)
   // You'll want to use `express` to do so
 }
+
+function searchLink(mySearch,typeSearch) {
+  var listFound = [];
+
+  if (typeSearch === "word in url") {
+    linkScrapped.forEach(function(val, idx){
+      if (val.indexOf(mySearch) !== -1) {
+        listFound.push(val);
+      }
+    })
+  }
+  else {
+    contentHtml.forEach(function(val, idx){
+      if (val.indexOf(mySearch) !== -1) {
+        listFound.push(linkScrapped[idx]);
+      }
+    })
+  }
+  
+
+  return listFound;
+}
  
  
 em.on('page:scraping', function(page_url){
@@ -107,10 +193,12 @@ em.on('page:scraping', function(page_url){
 // Listen to events, see: http://nodejs.org/api/all.html#all_emitter_on_event_listener
 em.on('page', function(page_url, html_str){
   console.log('We got a new page!', page_url);
+  console.log(queue.length);
 });
  
 em.on('page:error', function(page_url, error){
   console.error('Oops an error occured on', page_url, ' : ', error);
+  em.emit('beforeScraping', page_url);
 });
  
 em.on('page', extract_links);
@@ -120,6 +208,8 @@ em.on('url', function(page_url, html_str, url){
 });
  
 em.on('url', handle_new_url);
+
+em.on('beforeScraping', scrapNextPage);
  
  
 // A simple (non-REST) API
@@ -136,6 +226,8 @@ em.on('url', handle_new_url);
 // You should extract all the following "api" related code into its own NodeJS module and require it with
 // var api = require('./api');
 // api.listen(PORT);
+
+app.use(express.bodyParser());
  
 app.get('/', function(req, res){
   // See: http://expressjs.com/api.html#res.json
@@ -178,9 +270,89 @@ app.get('/queue/list', function(req, res){
     }
   });
 });
- 
+
+app.get('/queueScrapped/list', function(req, res){
+  res.json(200, {
+    linkScrapped:{
+      length:linkScrapped.length,
+      urls:linkScrapped
+    }
+  });
+});
+
+app.get('/home', function(req, res){
+  res.render('home.html');
+});
+
+app.get('/index', function(req, res){
+  res.render('index.html');
+});
+
+app.get('/search', function(req, res){
+  res.render('search.html');
+});
+
+app.get('/statistic', function(req, res){
+  res.render('statistic.html');
+});
+
+app.get('/list', function(req, res){
+  res.render('list.html');
+});
+
+app.post('/index', function(req, res){
+  var adr = req.body.adr;
+  nbAdr = req.body.nbAdr;
+  if (isNaN(nbAdr)) {
+    nbAdr = -1;
+  }
+  notJs = req.body.notJs;
+  get_page(adr);
+  res.render('index.html');
+});
+
+app.post('/queue/listScrap', function(req, res){
+  res.json(200, {
+    listScrap:{
+      length:linkScrapped.length,
+      urls:linkScrapped
+    },
+    listNotScrap:{
+      length:queue.length,
+      urls:queue
+    },
+    listError: {
+      length:linkError.length,
+      urls:linkError
+    }
+  });
+});
+
+app.post('/search/result', function(req, res){
+  var mySearch = req.body.mySearch;
+  var typeSearch = req.body.typeSearch;
+  res.json(200, {
+    listLinkFound:searchLink(mySearch,typeSearch)
+  })
+});
+
+app.post('/statistic/result', function(req, res){
+  res.json(200, {
+    result:domain
+  })
+});
+
+app.post('/statistic/pourcentage', function(req, res){
+  res.json(200, {
+    text: nbTextPages,
+    image: nbImagePages,
+    audio: nbAudioPages,
+    video: nbVideoPages
+  })
+});
+
 app.listen(PORT);
 console.log('Web UI Listening on port '+PORT);
  
 // #debug Start the crawler with a link
-get_page('http://twitter.com/FGRibreau');
+//get_page('http://twitter.com/FGRibreau');

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+	 <title> Scrapper web </title>
+	 <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+
+<body>
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="home">Scraper Web</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="home">Home</a></li>
+            <li><a href="index">Indexing</a></li>
+            <li><a href="search">Search</a></li>
+	    <li><a href="statistic">Statistics</a></li>
+            <li><a href="list">List</a></li>
+          </ul>
+        </div><!-- /.nav-collapse -->
+      </div><!-- /.container -->
+    </div><!-- /.navbar -->
+
+    <div class="container">
+
+      <div class="row row-offcanvas row-offcanvas-right">
+
+        <div class="col-xs-12 col-sm-9">
+          <p class="pull-right visible-xs">
+            <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+          </p>
+          <div class="jumbotron">
+            <h1>Scraper Web</h1>
+            <p>This is an application "web scraper" that aims to scrap the web. The application then provides the ability to conduct research on the Web pages found by the "web scraper". It also provides a number of interesting statistics on the web page found.</p>
+          </div>
+          <div class="row">
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>Home</h2>
+              <p>The main page of the application. You are currently reading this page. This page serves no purpose except to present the application and its various functionalities. Here is a presentation of each application tabs.</p>
+            </div><!--/span-->
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>Indexing</h2>
+              <p>The application will index the web iteratively from the given url. It is possible to give a maximal number of url to extract links. If the number of links is specified by "*", the application will look continuously until it finds no links.</p>
+            </div><!--/span-->
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>Search</h2>
+              <p>This page allows you to perform searches on the indexed pages. It can be searched by two criteria. The first search the word in the page body, the second search the word in url. The searching concerne only scraped pages.</p>
+            </div><!--/span-->
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>Statistic</h2>
+              <p>This page gives some statistics on the pages that have been indexed and the research done. </p>
+            </div><!--/span-->
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>List</h2>
+              <p>This page lists the known application url. It shows, in green, pages whose links has already been extracted and ,in red, pages whose the links extraction has failed. </p>
+            </div><!--/span-->
+            <div class="col-6 col-sm-6 col-lg-4">
+              <h2>Code</h2>
+              <p>This application is coded in html / javascript client side and it use nodejs server side. You can find the source code of the application on github. Do not hesitate to post all your improvement ideas. </p>
+              <p><a class="btn btn-default" href="https://github.com/Baptiste-Pignol/webspider" role="button">See on github &raquo;</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+        </div><!--/span--><!--/span-->
+      </div><!--/row-->
+
+      <hr>
+
+      <footer>
+        <p>Baptiste Pignol 2013</p>
+      </footer>
+
+    </div><!--/.container-->
+</body>
+
+</html>

@@ -13,6 +13,7 @@
     "lodash": "~2.2.1",
     "request": "~2.27.0",
     "winston": "~0.7.2",
-    "express": "~3.4.3"
+    "express": "~3.4.3",
+    "sqlite3": "~2.1.19"
   }
 }

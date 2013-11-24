@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+	 <title> Scrapper web </title>
+	 <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+
+<body>
+    <div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="home">Scraper Web</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="home">Home</a></li>
+            <li class="active"><a href="index">Indexing</a></li>
+            <li><a href="search">Search</a></li>
+	    <li><a href="statistic">Statistics</a></li>
+ 	    <li><a href="list">List</a></li>
+          </ul>
+        </div><!-- /.nav-collapse -->
+      </div><!-- /.container -->
+    </div><!-- /.navbar -->
+
+    <div class="container">
+
+      <div class="row row-offcanvas row-offcanvas-right">
+
+        <div class="col-xs-12 col-sm-9">
+          <p class="pull-right visible-xs">
+            <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+          </p>
+          <div class="jumbotron">
+            <h1>Indexing</h1>
+            <p>Choose the starting url for indexing scraper</p>
+          </div>
+          <div class="row">
+            <form class="form-signin" method="POST" action="index">
+		<div class="col-6 col-sm-6 col-lg-4">
+        		<h2 class="form-signin-heading">Please enter an url</h2>
+        		<input type="url" name="adr" id="adr" class="form-control" placeholder="Url" required autofocus>
+			<br>
+            <label class="checkbox">
+              <input type="checkbox" name="notJs" id="notJs" value="true"> Don't scrap Javascript pages
+            </label>
+        		<button class="btn btn-lg btn-primary btn-block" type="submit">Start scraping</button>
+		</div><!--/span-->
+		<div class="col-6 col-sm-6 col-lg-4">
+			<h2 class="form-signin-heading">Number of pages</h2>
+        		<input type="text" name="nbAdr" id="nbAdr" class="form-control" value="*" required>
+		</div><!--/span-->
+             </form>
+          </div><!--/row-->
+		  <br />
+        </div><!--/span--><!--/span-->
+      </div><!--/row-->
+
+      <hr>
+
+      <footer>
+        <p>Baptiste Pignol 2013</p>
+      </footer>
+
+    </div><!--/.container-->
+</body>
+
+</html>
